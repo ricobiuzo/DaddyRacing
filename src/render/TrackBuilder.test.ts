@@ -28,6 +28,21 @@ describe('TrackBuilder: heading correctness (800ec5bb Change 1)', () => {
   });
 });
 
+describe('TrackBuilder: lap-fraction wraparound continuity (800ec5bb Change 4)', () => {
+  it('produces a continuous position and heading across the 1.0 -> 0.0 wrap on every real track', () => {
+    for (const track of TRACKS) {
+      const justBefore = pointOnTrack(track.id, 0.9999);
+      const atWrap = pointOnTrack(track.id, 1.0);
+      const justAfter = pointOnTrack(track.id, 0.0001);
+
+      const gapBefore = Math.hypot(atWrap.x - justBefore.x, atWrap.z - justBefore.z);
+      const gapAfter = Math.hypot(justAfter.x - atWrap.x, justAfter.z - atWrap.z);
+      expect(gapBefore).toBeLessThan(2);
+      expect(gapAfter).toBeLessThan(2);
+    }
+  });
+});
+
 describe('TrackBuilder: fallback behaviour (800ec5bb Change 4)', () => {
   it('falls back to the perfect circle rather than crashing when a track has no path data', () => {
     const point = pointOnTrack('not-a-real-track' as TrackId, 0.25);

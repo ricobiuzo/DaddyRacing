@@ -57,3 +57,57 @@ describe('KartController (Accelerate/Brake/Steer)', () => {
     expect(crossed).toBe(true);
   });
 });
+
+describe('KartController (lateral steering)', () => {
+  it('moves the kart laterally away from the centerline when steering', () => {
+    const kart = new KartController(dryTrack);
+    const steerRight = { accelerate: false, brake: false, steerLeft: false, steerRight: true };
+    let lastOffset = 0;
+    for (let i = 0; i < 10; i += 1) {
+      lastOffset = kart.update(steerRight, 0.1).transform.lateralOffset;
+    }
+    expect(lastOffset).toBeGreaterThan(0);
+  });
+
+  it('steers left and right symmetrically', () => {
+    const kartLeft = new KartController(dryTrack);
+    const kartRight = new KartController(dryTrack);
+    const steerLeft = { accelerate: false, brake: false, steerLeft: true, steerRight: false };
+    const steerRight = { accelerate: false, brake: false, steerLeft: false, steerRight: true };
+    let leftOffset = 0;
+    let rightOffset = 0;
+    for (let i = 0; i < 10; i += 1) {
+      leftOffset = kartLeft.update(steerLeft, 0.1).transform.lateralOffset;
+      rightOffset = kartRight.update(steerRight, 0.1).transform.lateralOffset;
+    }
+    expect(leftOffset).toBeCloseTo(-rightOffset, 5);
+  });
+
+  it('clamps lateralOffset at the verge limit under sustained steering, without exceeding it', () => {
+    const kart = new KartController(dryTrack);
+    const steerRight = { accelerate: false, brake: false, steerLeft: false, steerRight: true };
+    let offset = 0;
+    for (let i = 0; i < 500; i += 1) {
+      offset = kart.update(steerRight, 0.1).transform.lateralOffset;
+      expect(offset).toBeLessThanOrEqual(8);
+    }
+    expect(offset).toBeGreaterThan(7.9);
+  });
+
+  it('reduces achievable top speed once the kart drives off the paved road edge', () => {
+    const steerRight = { accelerate: false, brake: false, steerLeft: false, steerRight: true };
+    const accelerate = { accelerate: true, brake: false, steerLeft: false, steerRight: false };
+
+    const offRoadKart = new KartController(dryTrack);
+    for (let i = 0; i < 20; i += 1) offRoadKart.update(steerRight, 0.1); // push lateralOffset past the paved edge
+    for (let i = 0; i < 30; i += 1) offRoadKart.update(accelerate, 1);
+    const offRoadResult = offRoadKart.update(accelerate, 0);
+    expect(Math.abs(offRoadResult.transform.lateralOffset)).toBeGreaterThan(5); // confirm still off-road
+
+    const onRoadKart = new KartController(dryTrack);
+    for (let i = 0; i < 30; i += 1) onRoadKart.update(accelerate, 1);
+    const onRoadSpeed = onRoadKart.update(accelerate, 0).transform.speed;
+
+    expect(offRoadResult.transform.speed).toBeLessThan(onRoadSpeed);
+  });
+});

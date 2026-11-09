@@ -23,8 +23,9 @@ export class RenderingEngine {
 
   constructor(container: HTMLElement) {
     this.camera = new THREE.PerspectiveCamera(90, container.clientWidth / container.clientHeight, 0.1, 500);
-    // First-person, in-kart: camera sits low and close to the road.
-    this.camera.position.set(0, 0.9, 0);
+    // Third-person vehicle view (`800ec5bb-...` Change 3): starting position only —
+    // GameClient repositions this every frame to chase behind and above the kart.
+    this.camera.position.set(0, 2.5, 6);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(container.clientWidth, container.clientHeight);

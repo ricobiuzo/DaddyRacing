@@ -78,6 +78,8 @@ export interface KartTransform {
   z: number;
   headingRadians: number;
   speed: number;
+  /** Signed distance in meters from the track centerline, positive to the right. */
+  lateralOffset: number;
 }
 
 export interface RaceProgress {

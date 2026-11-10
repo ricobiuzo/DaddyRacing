@@ -23,6 +23,7 @@ export class PreRaceSetupUI {
   private readonly statusEl: HTMLParagraphElement;
 
   private selfPlayerId: string | null = null;
+  private readonly unsubscribe: () => void;
 
   constructor(
     container: HTMLElement,
@@ -59,7 +60,7 @@ export class PreRaceSetupUI {
     this.readyButton.addEventListener('click', () => this.handleReadyClick());
 
     this.renderKartOptions();
-    transport.onStateChange((state) => this.render(state));
+    this.unsubscribe = transport.onStateChange((state) => this.render(state));
     const existing = transport.getState();
     if (existing) this.render(existing);
   }
@@ -69,6 +70,12 @@ export class PreRaceSetupUI {
   }
 
   destroy(): void {
+    // Without this, the Session Server's ~20Hz state broadcast during a race
+    // keeps calling this.render() on a lobby that's already gone, which calls
+    // onReadyToRace() again every time — spawning a brand new RenderingEngine
+    // (WebGL context + canvas) and InputHandler on every tick, without ever
+    // disposing the previous ones. See the white-screen crash this caused.
+    this.unsubscribe();
     this.root.remove();
   }
 

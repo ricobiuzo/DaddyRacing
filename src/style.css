@@ -21,6 +21,13 @@ body {
   width: min(480px, 90vw);
 }
 
+.session-code {
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
 .kart-list,
 .track-list {
   display: flex;

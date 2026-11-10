@@ -16,6 +16,7 @@ export interface PreRaceSetupCallbacks {
  */
 export class PreRaceSetupUI {
   private readonly root: HTMLDivElement;
+  private readonly sessionCodeEl: HTMLParagraphElement;
   private readonly playerListEl: HTMLUListElement;
   private readonly kartListEl: HTMLDivElement;
   private readonly trackListEl: HTMLDivElement;
@@ -34,6 +35,7 @@ export class PreRaceSetupUI {
     this.root.className = 'pre-race-setup';
     this.root.innerHTML = `
       <h1>DaddyRacing</h1>
+      <p class="session-code"></p>
       <section>
         <h2>Players</h2>
         <ul class="player-list"></ul>
@@ -51,6 +53,7 @@ export class PreRaceSetupUI {
     `;
     container.appendChild(this.root);
 
+    this.sessionCodeEl = this.root.querySelector('.session-code')!;
     this.playerListEl = this.root.querySelector('.player-list')!;
     this.kartListEl = this.root.querySelector('.kart-list')!;
     this.trackListEl = this.root.querySelector('.track-list')!;
@@ -93,6 +96,10 @@ export class PreRaceSetupUI {
   }
 
   private render(state: SessionState): void {
+    // The host was never shown this code anywhere, so a second player had no
+    // correct code to join with ("No session found with that code").
+    this.sessionCodeEl.textContent = `Session code: ${state.sessionId}`;
+
     // Session Player List (c20e5254-...)
     this.playerListEl.innerHTML = '';
     for (const player of state.players) {
